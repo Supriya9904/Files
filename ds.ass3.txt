@@ -1,0 +1,111 @@
+✅ 💻 Your MPI Program Code
+
+Save this as arrsum.c
+
+#include <mpi.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[]) {
+
+    MPI_Init(&argc, &argv);
+
+    int rank, size;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    int unitSize = 5;
+    int root = 0;
+
+    int total_elements = unitSize * size;
+
+    int *send_buffer = NULL;
+    int receive_buffer[5];
+    int gather_buffer[size];
+
+    if (rank == root) {
+        send_buffer = (int *)malloc(total_elements * sizeof(int));
+
+        printf("Enter %d elements:\n", total_elements);
+        for (int i = 0; i < total_elements; i++) {
+            scanf("%d", &send_buffer[i]);
+        }
+    }
+
+    MPI_Scatter(
+        send_buffer, unitSize, MPI_INT,
+        receive_buffer, unitSize, MPI_INT,
+        root, MPI_COMM_WORLD
+    );
+
+    int local_sum = 0;
+    for (int i = 0; i < unitSize; i++) {
+        local_sum += receive_buffer[i];
+    }
+
+    printf("Intermediate sum at process %d = %d\n", rank, local_sum);
+
+    MPI_Gather(
+        &local_sum, 1, MPI_INT,
+        gather_buffer, 1, MPI_INT,
+        root, MPI_COMM_WORLD
+    );
+
+    if (rank == root) {
+        int total_sum = 0;
+        for (int i = 0; i < size; i++) {
+            total_sum += gather_buffer[i];
+        }
+
+        printf("Final Sum = %d\n", total_sum);
+    }
+
+    MPI_Finalize();
+    return 0;
+}
+
+📄 (Taken from your file)
+
+✅ 🚀 Step-by-Step to RUN Program
+🔹 Step 1: Install MPI (only once)
+sudo apt update
+sudo apt install openmpi-bin openmpi-common libopenmpi-dev
+🔹 Step 2: Create file
+nano arrsum.c
+
+👉 Paste code → save:
+
+Ctrl + X
+Y
+Enter
+🔹 Step 3: Compile (IMPORTANT: use mpicc)
+mpicc arrsum.c -o arrsum
+🔹 Step 4: Run program
+mpirun -np 4 ./arrsum
+⚠️ Important Input Rule
+Process count	Input needed
+4	20 numbers
+2	10 numbers
+
+👉 Because:
+
+total = unitSize (5) × processes
+✅ Example
+
+If you run:
+
+mpirun -np 4 ./arrsum
+
+👉 Enter:
+
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+🔥 Expected Output
+Intermediate sum at process 0 = ...
+Intermediate sum at process 1 = ...
+...
+Final Sum = ...
+👍 Quick Summary
+Step	Command
+Install MPI	sudo apt install openmpi-bin
+Compile	mpicc arrsum.c -o arrsum
+Run	mpirun -np 4 ./arrsum
