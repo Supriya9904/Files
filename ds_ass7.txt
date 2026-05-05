@@ -1,0 +1,113 @@
+PART 1: Extracted Code (Clean)
+🔹 1. Server → SimpleWebService.java
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpExchange;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.URI;
+
+public class SimpleWebService {
+
+    public static void main(String[] args) throws IOException {
+
+        // Create server on port 8080
+        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+
+        // Create endpoint
+        server.createContext("/hello", new HelloHandler());
+
+        server.setExecutor(null); // default thread pool
+        server.start();
+
+        System.out.println("Server started at http://localhost:8080");
+    }
+
+    static class HelloHandler implements HttpHandler {
+
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+
+            URI requestURI = exchange.getRequestURI();
+            String query = requestURI.getQuery();
+
+            String name = "Guest";
+
+            if (query != null && query.contains("name=")) {
+                name = query.split("=")[1];
+            }
+
+            String response = "Hello, " + name + "! This is a Java Web Service.";
+
+            exchange.sendResponseHeaders(200, response.length());
+
+            OutputStream os = exchange.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        }
+    }
+}
+🔹 2. Client → ClientApp.java
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+public class ClientApp {
+
+    public static void main(String[] args) {
+
+        try {
+            String url = "http://localhost:8080/hello?name=Student";
+
+            URI uri = URI.create(url);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request,
+                    HttpResponse.BodyHandlers.ofString());
+
+            System.out.println("Response Code: " + response.statusCode());
+            System.out.println("Response from server:");
+            System.out.println(response.body());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+⚙️ PART 2: How to Run on Ubuntu (JDK 17)
+🔹 Step 1: Create folder
+mkdir WebService
+cd WebService
+🔹 Step 2: Create files
+nano SimpleWebService.java
+
+👉 Paste server code → save
+
+nano ClientApp.java
+
+👉 Paste client code → save
+
+🔹 Step 3: Compile
+javac SimpleWebService.java
+javac ClientApp.java
+🔹 Step 4: Run Server
+java SimpleWebService
+
+👉 Output:
+
+Server started at http://localhost:8080
+🔹 Step 5: Run Client (new terminal)
+cd WebService
+java ClientApp
+▶️ Expected Output
+Response Code: 200
+Response from server:
+Hello, Student! This is a Java Web Service.
