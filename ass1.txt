@@ -1,0 +1,142 @@
+1. Create Folder Structure
+
+Create a folder named:
+
+DSASS1
+
+Inside it create these 4 Java files:
+
+2. ClientRequest.java
+package DSASS1;
+
+import java.rmi.*;
+
+public class ClientRequest {
+
+    @SuppressWarnings("UseSpecificCatch")
+    public static void main(String args[]) {
+
+        String answer, value = "RMI in Java";
+
+        try {
+            Search access = (Search) Naming.lookup("rmi://localhost:2000/LP-V");
+
+            answer = access.query(value);
+
+            System.out.println("Article on " + value + " " + answer + " at LP-V");
+
+        } catch (Exception ae) {
+            System.out.println(ae);
+        }
+    }
+}
+3. Search.java
+package DSASS1;
+
+import java.rmi.*;
+
+public interface Search extends Remote {
+
+    public String query(String search) throws RemoteException;
+}
+4. SearchQuery.java
+package DSASS1;
+
+import java.rmi.*;
+import java.rmi.server.*;
+
+public class SearchQuery extends UnicastRemoteObject implements Search {
+
+    public SearchQuery() throws RemoteException {
+        super();
+    }
+
+    public String query(String search) throws RemoteException {
+
+        String result;
+
+        if (search.equals("RMI in Java"))
+            result = "Found";
+        else
+            result = "Not Found";
+
+        return result;
+    }
+}
+5. SearchServer.java
+package DSASS1;
+
+import java.rmi.*;
+import java.rmi.registry.*;
+
+public class SearchServer {
+
+    @SuppressWarnings("UseSpecificCatch")
+    public static void main(String args[]) {
+
+        try {
+
+            Search obj = new SearchQuery();
+
+            LocateRegistry.createRegistry(2000);
+
+            Naming.rebind("rmi://localhost:2000/LP-V", obj);
+
+            System.out.println("Server is running...");
+
+        } catch (Exception ae) {
+            System.out.println(ae);
+        }
+    }
+}
+6. Steps to Run (Ubuntu Terminal)
+Step 1: Open Terminal
+
+Go to folder where your DSASS1 folder is present.
+
+Example:
+
+cd Desktop
+Step 2: Compile All Files
+javac DSASS1/*.java
+Step 3: Run Server
+
+Open Terminal 1:
+
+java DSASS1.SearchServer
+
+Output:
+
+Server is running...
+Step 4: Run Client
+
+Open another terminal.
+
+Run:
+
+java DSASS1.ClientRequest
+
+Output:
+
+Article on RMI in Java Found at LP-V
+7. Important
+
+Make sure Java is installed.
+
+Check using:
+
+java -version
+
+and
+
+javac -version
+
+If not installed:
+
+sudo apt update
+sudo apt install default-jdk
+8. Expected Output
+Server Terminal
+Server is running...
+Client Terminal
+Article on RMI in Java Found at LP-V
