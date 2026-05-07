@@ -1,0 +1,129 @@
+import java.util.*;
+
+public class RingElection {
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int[] process = new int[n];
+
+        System.out.println("Enter process IDs:");
+        for (int i = 0; i < n; i++) {
+            process[i] = sc.nextInt();
+        }
+
+        System.out.print("Enter initiator index (0 to " + (n - 1) + "): ");
+        int initiator = sc.nextInt();
+
+        ArrayList<Integer> electionList = new ArrayList<>();
+
+        System.out.println("\nElection started by P" + process[initiator]);
+
+        int current = initiator;
+
+        // circulate message
+        do {
+            System.out.println("P" + process[current] + " passes message");
+
+            electionList.add(process[current]);
+
+            current = (current + 1) % n;
+
+        } while (current != initiator);
+
+        // find leader
+        int leader = Collections.max(electionList);
+
+        System.out.println("\nProcesses participated: " + electionList);
+        System.out.println("New Coordinator is: P" + leader);
+
+        sc.close();
+    }
+}
+
+
+
+
+
+
+Steps to Run Ring Election Program in Ubuntu
+Step 1: Open Terminal
+
+Press:
+
+Ctrl + Alt + T
+Step 2: Create Java File
+
+Type:
+
+nano RingElection.java
+Step 3: Paste the Code
+
+Paste your code inside the editor.
+
+After pasting:
+
+Press Ctrl + O → Save
+Press Enter
+Press Ctrl + X → Exit
+Step 4: Check Java Installed or Not
+
+Type:
+
+java -version
+
+If Java is installed, version will appear.
+
+If not installed:
+
+sudo apt update
+sudo apt install default-jdk
+Step 5: Compile the Program
+
+Type:
+
+javac RingElection.java
+
+If no error comes → compilation successful.
+
+Step 6: Run the Program
+
+Type:
+
+java RingElection
+Example Run
+Enter number of processes: 5
+Enter process IDs:
+1
+2
+3
+4
+5
+Enter initiator index (0 to 4): 2
+
+Output:
+
+Election started by P3
+P3 passes message
+P4 passes message
+P5 passes message
+P1 passes message
+P2 passes message
+
+Processes participated: [3, 4, 5, 1, 2]
+New Coordinator is: P5
+Meaning of Output
+Output	Meaning
+P3 passes message	Process 3 sends election message
+Message circulates	Message goes in ring order
+Max ID selected	Highest process ID becomes coordinator
+P5	New leader/coordinator
+Important Commands Summary
+Work	Command
+Create file	nano RingElection.java
+Compile	javac RingElection.java
+Run	java RingElection
