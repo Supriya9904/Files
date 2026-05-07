@@ -1,0 +1,162 @@
+server.java
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+public class Server {
+
+    public static void main(String[] args) throws Exception {
+
+        ServerSocket serverSocket = new ServerSocket(5000);
+        System.out.println("Server started... Waiting for clients");
+
+        List<Long> clientTimes = new ArrayList<>();
+        List<Socket> clients = new ArrayList<>();
+
+        // Accept 3 clients
+        for (int i = 0; i < 3; i++) {
+            Socket socket = serverSocket.accept();
+            clients.add(socket);
+
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream())
+            );
+
+            long clientTime = Long.parseLong(in.readLine());
+            clientTimes.add(clientTime);
+
+            System.out.println("Received time: " + clientTime);
+        }
+
+        // Server time
+        long serverTime = System.currentTimeMillis();
+
+        long sum = serverTime;
+        for (long t : clientTimes) {
+            sum += t;
+        }
+
+        long avgTime = sum / (clientTimes.size() + 1);
+
+        System.out.println("Average Time: " + avgTime);
+
+        // Send synchronized time to all clients
+        for (Socket s : clients) {
+            PrintWriter out = new PrintWriter(
+                s.getOutputStream(), true
+            );
+            out.println(avgTime);
+            s.close();
+        }
+
+        serverSocket.close();
+    }
+}
+
+
+
+client.java
+
+import java.io.*;
+import java.net.*;
+
+public class Client {
+
+    public static void main(String[] args) throws Exception {
+
+        Socket socket = new Socket("localhost", 5000);
+
+        PrintWriter out = new PrintWriter(
+            socket.getOutputStream(), true
+        );
+
+        BufferedReader in = new BufferedReader(
+            new InputStreamReader(socket.getInputStream())
+        );
+
+        // Send client time
+        long clientTime = System.currentTimeMillis();
+        System.out.println("Client Time: " + clientTime);
+
+        out.println(clientTime);
+
+        // Receive synchronized time
+        long syncTime = Long.parseLong(in.readLine());
+
+        System.out.println("Synchronized Time: " + syncTime);
+
+        socket.close();
+    }
+}
+
+
+
+Step 4: Compile Both Files
+
+Type:
+
+javac Server.java
+javac Client.java
+
+If no error → compilation successful.
+
+Step 5: Run Server
+
+Open terminal and type:
+
+java Server
+
+Output:
+
+Server started... Waiting for clients
+
+Server now waits for 3 clients.
+
+Step 6: Open 3 More Terminals
+
+Open new terminals using:
+
+Ctrl + Shift + T
+
+OR open 3 separate terminal windows.
+
+Step 7: Run Client in Each Terminal
+
+In terminal 1:
+
+java Client
+
+In terminal 2:
+
+java Client
+
+In terminal 3:
+
+java Client
+What Happens Internally
+Step	Work
+Client sends current time	System.currentTimeMillis()
+Server receives all client times	Stores in list
+Server adds its own time	Calculates total
+Average calculated	Synchronization time
+Server sends average time	To all clients
+Clients display synchronized time	Clock synchronization
+Example Output
+Server Output
+Server started... Waiting for clients
+
+Received time: 1746633000000
+Received time: 1746633001000
+Received time: 1746633002000
+
+Average Time: 1746633001500
+Client Output
+Client Time: 1746633000000
+Synchronized Time: 1746633001500
+Important Commands Summary
+Work	Command
+Compile Server	javac Server.java
+Compile Client	javac Client.java
+Run Server	java Server
+Run Client	java Client
