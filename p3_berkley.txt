@@ -1,0 +1,88 @@
+//Server.java
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+public class Server {
+
+    public static void main(String[] args) throws Exception {
+
+        ServerSocket serverSocket = new ServerSocket(5000);
+        System.out.println("Server started... Waiting for clients");
+
+        List<Long> clientTimes = new ArrayList<>();
+        List<Socket> clients = new ArrayList<>();
+
+        // Accept 3 clients
+        for (int i = 0; i < 3; i++) {
+            Socket socket = serverSocket.accept();
+            clients.add(socket);
+
+            BufferedReader in = new BufferedReader(
+                new InputStreamReader(socket.getInputStream())
+            );
+
+            long clientTime = Long.parseLong(in.readLine());
+            clientTimes.add(clientTime);
+
+            System.out.println("Received time: " + new Date(clientTime));
+        }
+
+        // Server time
+        long serverTime = System.currentTimeMillis();
+
+        long sum = serverTime;
+        for (long t : clientTimes) {
+            sum += t;
+        }
+
+        long avgTime = sum / (clientTimes.size() + 1);
+
+        System.out.println("Average Time: " + new Date(avgTime));
+
+        // Send synchronized time to all clients
+        for (Socket s : clients) {
+            PrintWriter out = new PrintWriter(
+                s.getOutputStream(), true
+            );
+            out.println(avgTime);
+            s.close();
+        }
+
+        serverSocket.close();
+    }
+}
+
+//Client.java
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+public class Client {
+
+    public static void main(String[] args) throws Exception {
+
+        Socket socket = new Socket("localhost", 5000);
+
+        PrintWriter out = new PrintWriter(
+            socket.getOutputStream(), true
+        );
+
+        BufferedReader in = new BufferedReader(
+            new InputStreamReader(socket.getInputStream())
+        );
+
+        // Send client time
+        long clientTime = System.currentTimeMillis();
+        System.out.println("Client Time: " + new Date(clientTime));
+
+        out.println(clientTime);
+
+        // Receive synchronized time
+        long syncTime = Long.parseLong(in.readLine());
+
+        System.out.println("Synchronized Time: " + new Date(syncTime));
+
+        socket.close();
+    }
+}
